@@ -36,6 +36,7 @@ var credentials = extend({
 
 var corpus_id = process.env.CORPUS_ID || '/corpora/di1forob8my1/uoft_csc_news';
 var corpus_course_id = process.env.CORPUS_ID || "/corpora/di1forob8my1/uoft_crs_csc";
+var corpus_research_id = process.env.CORPUS_ID || "/corpora/di1forob8my1/uoft_csc_research";
 var graph_id  = process.env.GRAPH_ID ||  '/graphs/wikipedia/en-20120601';
 
 var querystring = require('querystring');
@@ -108,6 +109,26 @@ app.get('/api/conceptualSearch', function(req, res, next) {
     // console.log("pppssssss");
   // console.log(req);
   var params = extend({ corpus: corpus_id, limit: 10 }, req.query);
+  conceptInsights.corpora.getRelatedDocuments(params, function(err, data) {
+    if (err)
+      return next(err);
+    else {
+      async.parallel(data.results.map(getPassagesAsync), function(err, documentsWithPassages) {
+        if (err)
+          return next(err);
+        else{
+          data.results = documentsWithPassages;
+          res.json(data);
+        }
+      });
+    }
+  });
+});
+
+app.get('/api/conceptualSearchResearch', function(req, res, next) {
+    // console.log("pppssssss");
+  // console.log(req);
+  var params = extend({ corpus: corpus_research_id, limit: 10 }, req.query);
   conceptInsights.corpora.getRelatedDocuments(params, function(err, data) {
     if (err)
       return next(err);
